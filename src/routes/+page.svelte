@@ -1,6 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { currentTime, isDebugMode, displayTime } from '$lib/stores/clock';
+	import {
+		currentTime,
+		useNetworkTime,
+		displayTime,
+		showMinuteScale,
+		showVerseInfo,
+		showClock,
+		isDarkMode
+	} from '$lib/stores/clock';
 	import VerseDisplay from '$lib/components/VerseDisplay.svelte';
 	import DebugPanel from '$lib/components/DebugPanel.svelte';
 	import MinuteScale from '$lib/components/MinuteScale.svelte';
@@ -52,7 +60,20 @@
 		}
 	}
 
+	function handleKeydown(event: KeyboardEvent) {
+		if (event.key.toLowerCase() === 'd') {
+			toggleSettings();
+		} else if (event.key.toLowerCase() === 'f') {
+			if (!document.fullscreenElement) {
+				document.documentElement.requestFullscreen().catch(() => {});
+			} else {
+				document.exitFullscreen();
+			}
+		}
+	}
+
 	onMount(() => {
+		window.addEventListener('keydown', handleKeydown);
 		loadBibleData();
 		// 10분마다 갱신 확인
 		const dataInterval = setInterval(loadBibleData, 10 * 60 * 1000);
@@ -60,7 +81,7 @@
 		// 매 프레임/타이머 시간 업데이트 루프
 		let frame: number;
 		const loop = () => {
-			if (!$isDebugMode) {
+			if ($useNetworkTime) {
 				currentTime.set(new Date());
 			}
 			frame = requestAnimationFrame(loop);
@@ -68,6 +89,7 @@
 		frame = requestAnimationFrame(loop);
 
 		return () => {
+			window.removeEventListener('keydown', handleKeydown);
 			clearInterval(dataInterval);
 			cancelAnimationFrame(frame);
 		};
@@ -79,29 +101,52 @@
 	}
 </script>
 
-<div class="app-container">
+<!-- 다크 모드 활성화 시 최상위 div 컨테이너를 통해 body에 스타일이 상속되도록 설정 -->
+<div class="app-container {$isDarkMode ? 'dark-mode' : ''}">
 	<div class="main-content">
 		<VerseDisplay verseText={currentVerse.text} is12Hour={$displayTime.is12Hour} />
 
-		<div class="info-footer">
-			<div class="reference">{currentVerse.reference}</div>
-			<div class="time-display">{$displayTime.formatted}</div>
-		</div>
+		{#if $showVerseInfo || $showClock}
+			<div class="info-footer">
+				{#if $showVerseInfo}
+					<div class="reference">{currentVerse.reference}</div>
+				{/if}
+				{#if $showClock}
+					<div class="time-display">{$displayTime.formatted}</div>
+				{/if}
+			</div>
+		{/if}
 	</div>
 
-	<MinuteScale on:toggleSettings={toggleSettings} />
+	<!-- 타임라인의 히트박스는 항상 렌더링하되, Ticks 요소만 보였다 감췄다 처리 -->
+	<MinuteScale visible={$showMinuteScale} on:toggleSettings={toggleSettings} />
 
-	<!-- 디버그/설정 패널 (하단 눈금표를 탭하여 활성화) -->
+	<!-- 디버그/설정 패널 (하단 눈금표를 탭하거나 'd' 키로 활성화) -->
 	<DebugPanel isVisible={isSettingsVisible} />
 </div>
 
 <style>
+	/* 테마 CSS 변수 */
+	:global(:root) {
+		--bg-color: #fdfbf7;
+		--text-color: #5b534b; /* 기본 성경 구절 색상 */
+		--reference-color: #8c7f70;
+		--clock-color: #a39c93;
+		--tick-bg: rgba(91, 83, 75, 0.2);
+	}
+
+	:global(.dark-mode) {
+		--bg-color: #1a1816;
+		--text-color: #d1cbc3; /* 다크 모드 성경 구절 색상 */
+		--reference-color: #7a7066;
+		--clock-color: #635b52;
+		--tick-bg: rgba(253, 251, 247, 0.15);
+	}
+
 	/* 전역 스타일 */
 	:global(body) {
 		margin: 0;
 		padding: 0;
-		background-color: #fdfbf7; /* 고급 베이지 톤 */
-		color: #2c2925;
 		font-family: 'Noto Serif KR', serif;
 		overflow: hidden;
 	}
@@ -114,6 +159,11 @@
 		height: 100vh;
 		width: 100vw;
 		position: relative;
+		background-color: var(--bg-color);
+		color: var(--text-color);
+		transition:
+			background-color 0.5s ease,
+			color 0.5s ease;
 	}
 
 	.main-content {
@@ -137,15 +187,17 @@
 	.reference {
 		font-size: 1.5rem;
 		font-weight: 500;
-		color: #8c7f70;
+		color: var(--reference-color);
 		letter-spacing: 0.5px;
+		transition: color 0.5s ease;
 	}
 
 	.time-display {
 		font-size: 1.2rem;
 		letter-spacing: 3px;
 		font-family: 'Courier New', Courier, monospace;
-		color: #a39c93;
+		color: var(--clock-color);
 		font-weight: bold;
+		transition: color 0.5s ease;
 	}
 </style>

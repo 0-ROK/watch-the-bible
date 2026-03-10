@@ -1,10 +1,14 @@
 <script lang="ts">
 	import {
-		isDebugMode,
+		useNetworkTime,
 		debugSliderValue,
 		displayTime,
 		themeColors,
-		themeColor
+		themeColor,
+		showMinuteScale,
+		showVerseInfo,
+		showClock,
+		isDarkMode
 	} from '$lib/stores/clock';
 
 	export let isVisible: boolean = false;
@@ -32,9 +36,30 @@
 
 		<hr class="divider" />
 
+		<div class="toggle-group">
+			<label class="debug-label">
+				<input type="checkbox" bind:checked={$isDarkMode} />
+				다크 모드
+			</label>
+			<label class="debug-label">
+				<input type="checkbox" bind:checked={$showMinuteScale} />
+				분침 눈금 표시
+			</label>
+			<label class="debug-label">
+				<input type="checkbox" bind:checked={$showVerseInfo} />
+				성경 구절 정보 표시
+			</label>
+			<label class="debug-label">
+				<input type="checkbox" bind:checked={$showClock} />
+				디지털 시계 표시
+			</label>
+		</div>
+
+		<hr class="divider" />
+
 		<label class="debug-label">
-			<input type="checkbox" bind:checked={$isDebugMode} />
-			Debug 타임라인 활성화
+			<input type="checkbox" bind:checked={$useNetworkTime} />
+			네트워크 시간 사용 (해제 시 수동 조작)
 		</label>
 
 		<input
@@ -42,7 +67,7 @@
 			min="0"
 			max="86399"
 			bind:value={$debugSliderValue}
-			disabled={!$isDebugMode}
+			disabled={$useNetworkTime}
 			class="debug-slider"
 			style="accent-color: {$themeColor}"
 		/>
@@ -110,6 +135,12 @@
 		border: none;
 		border-top: 1px solid rgba(253, 251, 247, 0.1);
 		margin: 4px 0;
+	}
+
+	.toggle-group {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
 	}
 
 	.debug-label {

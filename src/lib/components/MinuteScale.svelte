@@ -2,6 +2,8 @@
 	import { displayTime, themeColor } from '$lib/stores/clock';
 	import { createEventDispatcher } from 'svelte';
 
+	export let visible = true;
+
 	const dispatch = createEventDispatcher();
 
 	// 총 60개의 눈금 배열 생성
@@ -20,7 +22,7 @@
 	on:click={handleClick}
 	title="설정 열기/닫기"
 >
-	<div class="scale-track">
+	<div class="scale-track" style="opacity: {visible ? 1 : 0}; pointer-events: none;">
 		{#each ticks as tick (tick)}
 			<div
 				class="tick {tick < $displayTime.minutes ? 'active' : ''} {tick === $displayTime.minutes
@@ -62,12 +64,13 @@
 		align-items: flex-end;
 		height: 20px;
 		padding: 0 20px;
+		transition: opacity 0.3s;
 	}
 
 	.tick {
 		width: 2px;
 		height: 8px;
-		background-color: rgba(91, 83, 75, 0.2); /* 지나지 않은 미래 시간: 반투명 회갈색 */
+		background-color: var(--tick-bg, rgba(91, 83, 75, 0.2)); /* 지나지 않은 미래 시간 */
 		border-radius: 1px;
 		transition: all 0.3s ease;
 	}

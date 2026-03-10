@@ -3,8 +3,14 @@ import { writable, derived } from 'svelte/store';
 // 전역 시계 상태
 export const currentTime = writable(new Date());
 
-// 디버그 모드 상태
-export const isDebugMode = writable(false);
+// 네트워크 시간 사용 여부 (true: 현재 시스템 시간, false: 수동 디버그 시간)
+export const useNetworkTime = writable(true);
+
+// 설정 옵션 스토어
+export const showMinuteScale = writable(true); // 분침 표시 여부
+export const showVerseInfo = writable(true); // 성경 구절 정보 표시 여부
+export const showClock = writable(true); // 시계 표시 여부
+export const isDarkMode = writable(false); // 다크 모드 활성화 여부
 
 // 디버그 모드 시 사용할 슬라이더 값 (0 ~ 86399 초)
 export const debugSliderValue = writable(0);
@@ -23,9 +29,9 @@ export const themeColor = writable(themeColors[1].hex);
 
 // 실제 애플리케이션에서 사용할 최종 계산된 시간 정보
 export const displayTime = derived(
-	[currentTime, isDebugMode, debugSliderValue],
-	([$currentTime, $isDebugMode, $debugSliderValue]) => {
-		if ($isDebugMode) {
+	[currentTime, useNetworkTime, debugSliderValue],
+	([$currentTime, $useNetworkTime, $debugSliderValue]) => {
+		if (!$useNetworkTime) {
 			const h = Math.floor($debugSliderValue / 3600);
 			const m = Math.floor(($debugSliderValue % 3600) / 60);
 			const s = $debugSliderValue % 60;

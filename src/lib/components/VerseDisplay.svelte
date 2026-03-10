@@ -124,7 +124,8 @@
 
 	/* 베이스 텍스트 색상 */
 	.base-text {
-		color: #5b534b;
+		color: var(--text-color, #5b534b);
+		transition: color 0.5s ease;
 	}
 
 	/* 마스킹되어 나타나는 밝은 테마 색상 텍스트 */
