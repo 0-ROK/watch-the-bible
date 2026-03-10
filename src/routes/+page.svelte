@@ -3,6 +3,13 @@
 	import { currentTime, isDebugMode, displayTime } from '$lib/stores/clock';
 	import VerseDisplay from '$lib/components/VerseDisplay.svelte';
 	import DebugPanel from '$lib/components/DebugPanel.svelte';
+	import MinuteScale from '$lib/components/MinuteScale.svelte';
+
+	let isSettingsVisible = false;
+
+	function toggleSettings() {
+		isSettingsVisible = !isSettingsVisible;
+	}
 
 	type BibleData = {
 		hour: number;
@@ -82,8 +89,10 @@
 		</div>
 	</div>
 
-	<!-- 디버그 패널 (키보드 'd' 입력시 활성화) -->
-	<DebugPanel />
+	<MinuteScale on:toggleSettings={toggleSettings} />
+
+	<!-- 디버그/설정 패널 (하단 눈금표를 탭하여 활성화) -->
+	<DebugPanel isVisible={isSettingsVisible} />
 </div>
 
 <style>

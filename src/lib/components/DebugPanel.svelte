@@ -6,33 +6,8 @@
 		themeColors,
 		themeColor
 	} from '$lib/stores/clock';
-	import { onMount, onDestroy } from 'svelte';
 
-	let isVisible = false;
-
-	function handleKeydown(event: KeyboardEvent) {
-		if (event.key.toLowerCase() === 'd') {
-			isVisible = !isVisible;
-		} else if (event.key.toLowerCase() === 'f') {
-			if (!document.fullscreenElement) {
-				document.documentElement.requestFullscreen().catch((err) => {
-					console.log(`Error attempting to enable full-screen mode: ${err.message}`);
-				});
-			} else {
-				document.exitFullscreen();
-			}
-		}
-	}
-
-	onMount(() => {
-		window.addEventListener('keydown', handleKeydown);
-	});
-
-	onDestroy(() => {
-		if (typeof window !== 'undefined') {
-			window.removeEventListener('keydown', handleKeydown);
-		}
-	});
+	export let isVisible: boolean = false;
 </script>
 
 {#if isVisible}
@@ -73,7 +48,6 @@
 		/>
 
 		<div class="debug-time" style="color: {$themeColor}">{$displayTime.formatted}</div>
-		<div class="debug-shortcut">(단축키 'd'로 창 닫기/열기, 'f'로 전체화면)</div>
 	</div>
 {/if}
 
@@ -161,12 +135,5 @@
 		font-family: monospace;
 		text-align: center;
 		font-weight: bold;
-	}
-
-	.debug-shortcut {
-		font-size: 0.75rem;
-		color: #a39c93;
-		text-align: center;
-		margin-top: -4px;
 	}
 </style>
