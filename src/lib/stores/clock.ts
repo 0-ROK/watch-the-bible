@@ -9,6 +9,18 @@ export const isDebugMode = writable(false);
 // 디버그 모드 시 사용할 슬라이더 값 (0 ~ 86399 초)
 export const debugSliderValue = writable(0);
 
+// 색상 테마 정의
+export const themeColors = [
+	{ name: '금색 (Original)', hex: '#d4af37' },
+	{ name: '세지 그린 (Sage Green)', hex: '#7ca48b' },
+	{ name: '버건디 (Burgundy)', hex: '#8b3a3a' },
+	{ name: '스틸 블루 (Steel Blue)', hex: '#4682b4' },
+	{ name: '테라코타 (Terracotta)', hex: '#e2725b' }
+];
+
+// 현재 선택된 테마 색상 (초기값: 세지 그린)
+export const themeColor = writable(themeColors[1].hex);
+
 // 실제 애플리케이션에서 사용할 최종 계산된 시간 정보
 export const displayTime = derived(
 	[currentTime, isDebugMode, debugSliderValue],

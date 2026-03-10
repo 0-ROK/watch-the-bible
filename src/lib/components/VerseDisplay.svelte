@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { hourProgress } from '$lib/stores/clock';
+	import { hourProgress, themeColor } from '$lib/stores/clock';
 
 	export let verseText: string = '';
 	export let is12Hour: number = 1;
@@ -50,57 +50,100 @@
 	$: parsedParts = parseVerse(verseText, is12Hour);
 </script>
 
-<div class="verse-container" style="--progress: {$hourProgress.toFixed(4)}%">
-	{#each parsedParts as part (part.text + part.isKeyword)}
-		{#if part.isKeyword}
-			<span class="keyword-highlight">{part.text}</span>
-		{:else}
-			<span class="base-text">{part.text}</span>
-		{/if}
-	{/each}
+<div class="verse-wrapper" style="--highlight-color: {$themeColor};">
+	<!-- 베이스 레이어 (어두운 회갈색) -->
+	<div class="verse-layer base-layer">
+		{#each parsedParts as part (part.text + part.isKeyword)}
+			{#if part.isKeyword}
+				<!-- 베이스 레이어에서 키워드는 투명하게 처리하여 자리만 차지하도록 함 -->
+				<span class="keyword-highlight invisible">{part.text}</span>
+			{:else}
+				<span class="base-text">{part.text}</span>
+			{/if}
+		{/each}
+	</div>
+
+	<!-- 컬러 레이어 (포인트 색상, clip-path 적용) -->
+	<div class="verse-layer color-layer" style="clip-path: inset(0 {100 - $hourProgress}% 0 0);">
+		{#each parsedParts as part (part.text + part.isKeyword)}
+			{#if part.isKeyword}
+				<span class="keyword-highlight invisible">{part.text}</span>
+			{:else}
+				<span class="colored-text">{part.text}</span>
+			{/if}
+		{/each}
+	</div>
+
+	<!-- 키워드 레이어 (무조건 상시 표시됨, 애니메이션 마스킹 제외) -->
+	<div class="verse-layer keyword-layer">
+		{#each parsedParts as part (part.text + part.isKeyword)}
+			{#if part.isKeyword}
+				<span class="keyword-highlight">{part.text}</span>
+			{:else}
+				<!-- 키워드가 아닌 글자는 투명 처리 -->
+				<span class="base-text invisible">{part.text}</span>
+			{/if}
+		{/each}
+	</div>
 </div>
 
 <style>
-	.verse-container {
+	.verse-wrapper {
+		position: relative;
 		width: 80%;
 		max-width: 1200px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.verse-layer {
 		font-size: 3rem;
 		font-weight: 700;
 		line-height: 1.6;
 		word-break: keep-all;
 		text-align: center;
-		/* Custom property definition for smooth animation */
-		transition: --progress 0.1s linear;
+		width: 100%;
 	}
 
-	/* 일반 텍스트: 마스킹 그라데이션 적용 */
+	/* 컬러/키워드 레이어는 베이스 레이어 위로 완벽히 겹쳐지게 설정 */
+	.color-layer,
+	.keyword-layer {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		pointer-events: none; /* 클릭 등의 이벤트 무시 */
+	}
+
+	.color-layer {
+		transition: clip-path 0.1s linear;
+	}
+
+	/* 베이스 텍스트 색상 */
 	.base-text {
-		background-image: linear-gradient(
-			to right,
-			#d4af37 0%,
-			#d4af37 var(--progress),
-			#5b534b var(--progress),
-			#5b534b 100%
-		);
-		-webkit-background-clip: text;
-		background-clip: text;
-		color: transparent;
+		color: #5b534b;
 	}
 
-	/* 강조 키워드: 마스킹 효과 제외, 거대한 크기, 상시 골드 색상 */
+	/* 마스킹되어 나타나는 밝은 테마 색상 텍스트 */
+	.colored-text {
+		color: var(--highlight-color);
+	}
+
+	/* 강조되는 키워드 텍스트: 가장 두껍고 크며 동적 테마 색상 적용 */
 	.keyword-highlight {
-		font-size: 4.5rem; /* 글씨를 훨씬 크게 */
-		font-weight: 900; /* 더 두껍게 */
-		color: #d4af37; /* 진행률과 무관하게 항상 하이라이트 색상 유지 */
-		text-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+		font-size: 4.5rem;
+		font-weight: 900;
+		color: var(--highlight-color);
+		text-shadow: 0 4px 15px color-mix(in srgb, var(--highlight-color) 40%, transparent);
 		margin: 0 8px;
 		display: inline-block;
-		transform: translateY(5px); /* 수직 정렬 보정 */
+		transform: translateY(5px);
 	}
 
-	@property --progress {
-		syntax: '<percentage>';
-		inherits: false;
-		initial-value: 0%;
+	/* 레이어 구조를 맞추기 위한 투명화 유틸리티 */
+	.invisible {
+		opacity: 0;
 	}
 </style>
