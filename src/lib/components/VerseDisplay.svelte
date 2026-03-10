@@ -101,7 +101,8 @@
 		font-size: 3rem;
 		font-weight: 700;
 		line-height: 1.6;
-		word-break: keep-all;
+		word-break: keep-all; /* 단어 단위로 자연스럽게 끊기도록 유지 */
+		overflow-wrap: break-word; /* 필요시 길면 줄바꿈 추가 허용 */
 		text-align: center;
 		width: 100%;
 	}
@@ -133,13 +134,13 @@
 
 	/* 강조되는 키워드 텍스트: 가장 두껍고 크며 동적 테마 색상 적용 */
 	.keyword-highlight {
-		font-size: 4.5rem;
+		font-size: 6.5rem; /* 글씨를 이전보다 훨씬 더 크게 (4.5rem -> 6.5rem) */
 		font-weight: 900;
 		color: var(--highlight-color);
 		text-shadow: 0 4px 15px color-mix(in srgb, var(--highlight-color) 40%, transparent);
-		margin: 0 8px;
+		margin: 0 12px;
 		display: inline-block;
-		transform: translateY(5px);
+		transform: translateY(10px); /* 커진 글씨체에 맞춘 수직 정렬 보정 */
 	}
 
 	/* 레이어 구조를 맞추기 위한 투명화 유틸리티 */
