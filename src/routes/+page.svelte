@@ -3,6 +3,7 @@
 	import {
 		currentTime,
 		useNetworkTime,
+		debugSliderValue,
 		displayTime,
 		showMinuteScale,
 		showVerseInfo,
@@ -80,10 +81,21 @@
 
 		// 매 프레임/타이머 시간 업데이트 루프
 		let frame: number;
-		const loop = () => {
+		let lastTimestamp: number | null = null;
+		const loop = (timestamp: number) => {
 			if ($useNetworkTime) {
 				currentTime.set(new Date());
+			} else {
+				// 네트워크 시간 미사용 시에도 실제 경과 시간만큼 슬라이더 값을 증가시켜 시간이 흐르도록 함
+				if (lastTimestamp !== null) {
+					const deltaSeconds = (timestamp - lastTimestamp) / 1000;
+					debugSliderValue.update((v) => {
+						const newValue = v + deltaSeconds;
+						return newValue >= 86400 ? newValue - 86400 : newValue;
+					});
+				}
 			}
+			lastTimestamp = timestamp;
 			frame = requestAnimationFrame(loop);
 		};
 		frame = requestAnimationFrame(loop);
