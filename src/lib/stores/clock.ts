@@ -32,15 +32,17 @@ export const displayTime = derived(
 	[currentTime, useNetworkTime, debugSliderValue],
 	([$currentTime, $useNetworkTime, $debugSliderValue]) => {
 		if (!$useNetworkTime) {
-			const h = Math.floor($debugSliderValue / 3600);
-			const m = Math.floor(($debugSliderValue % 3600) / 60);
-			const s = $debugSliderValue % 60;
+			const totalSec = $debugSliderValue;
+			const h = Math.floor(totalSec / 3600);
+			const m = Math.floor((totalSec % 3600) / 60);
+			const s = Math.floor(totalSec % 60);
+			const ms = Math.round((totalSec % 1) * 1000);
 			return {
 				hours: h,
 				minutes: m,
 				seconds: s,
-				milliseconds: 0,
-				totalSeconds: $debugSliderValue,
+				milliseconds: ms,
+				totalSeconds: totalSec,
 				is12Hour: h % 12 === 0 ? 12 : h % 12,
 				formatted: `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
 			};

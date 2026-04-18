@@ -25,10 +25,11 @@
 		if (!text) return [];
 
 		const keywords = hourKeywords[currentHour] || [];
-		let result = [{ text, isKeyword: false }];
+		let result = [{ text, isKeyword: false, id: 0 }];
+		let nextId = 1;
 
 		for (const keyword of keywords) {
-			let newResult: { text: string; isKeyword: boolean }[] = [];
+			let newResult: { text: string; isKeyword: boolean; id: number }[] = [];
 			for (const chunk of result) {
 				if (chunk.isKeyword) {
 					newResult.push(chunk);
@@ -37,8 +38,8 @@
 
 				const parts = chunk.text.split(keyword);
 				for (let i = 0; i < parts.length; i++) {
-					if (parts[i]) newResult.push({ text: parts[i], isKeyword: false });
-					if (i < parts.length - 1) newResult.push({ text: keyword, isKeyword: true });
+					if (parts[i]) newResult.push({ text: parts[i], isKeyword: false, id: nextId++ });
+					if (i < parts.length - 1) newResult.push({ text: keyword, isKeyword: true, id: nextId++ });
 				}
 			}
 			result = newResult;
@@ -53,7 +54,7 @@
 <div class="verse-wrapper" style="--highlight-color: {$themeColor};">
 	<!-- 베이스 레이어 (어두운 회갈색) -->
 	<div class="verse-layer base-layer">
-		{#each parsedParts as part (part.text + part.isKeyword)}
+		{#each parsedParts as part (part.id)}
 			{#if part.isKeyword}
 				<!-- 베이스 레이어에서 키워드는 투명하게 처리하여 자리만 차지하도록 함 -->
 				<span class="keyword-highlight invisible">{part.text}</span>
@@ -65,7 +66,7 @@
 
 	<!-- 컬러 레이어 (포인트 색상, clip-path 적용) -->
 	<div class="verse-layer color-layer" style="clip-path: inset(0 {100 - $hourProgress}% 0 0);">
-		{#each parsedParts as part (part.text + part.isKeyword)}
+		{#each parsedParts as part (part.id)}
 			{#if part.isKeyword}
 				<span class="keyword-highlight invisible">{part.text}</span>
 			{:else}
@@ -76,7 +77,7 @@
 
 	<!-- 키워드 레이어 (무조건 상시 표시됨, 애니메이션 마스킹 제외) -->
 	<div class="verse-layer keyword-layer">
-		{#each parsedParts as part (part.text + part.isKeyword)}
+		{#each parsedParts as part (part.id)}
 			{#if part.isKeyword}
 				<span class="keyword-highlight">{part.text}</span>
 			{:else}
